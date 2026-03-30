@@ -1,0 +1,67 @@
+@startuml CollabCodeHub_DeploymentDiagram
+
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+
+title CollabCodeHub - Deployment Diagram
+
+node "Client Machine A" as ClientA {
+    artifact "Web Browser\n(Chrome / Edge)" as BrowserA {
+        component [React 19 SPA\n(Vite Build)] as SPA_A
+        component [Monaco Editor\n+ y-monaco] as Monaco_A
+        component [Yjs CRDT\n(Local State)] as Yjs_A
+        component [xterm.js\n(Terminal UI)] as Xterm_A
+    }
+}
+
+node "Client Machine B" as ClientB {
+    artifact "Web Browser" as BrowserB {
+        component [React 19 SPA] as SPA_B
+        component [Monaco Editor\n+ y-monaco] as Monaco_B
+        component [Yjs CRDT\n(Local State)] as Yjs_B
+    }
+}
+
+cloud "Liveblocks Cloud" as LBCloud {
+    component [WebSocket Gateway\n(Real-Time Rooms)] as LBWS
+    database "CRDT State\nStorage" as LBStore
+}
+
+cloud "Supabase Cloud" as SupaCloud {
+    component [Supabase Auth\n(GoTrue)] as GoTrue
+    database "PostgreSQL\n(profiles, rooms,\nroom_members,\nmessages, tasks)" as PGDB
+    component [Realtime Engine\n(Phoenix Channels)] as SRT
+    component [Row-Level Security\n(is_room_member())" as RLS
+}
+
+cloud "HuggingFace Cloud" as HFCloud {
+    component [Inference Router\n(/v1/chat/completions)] as HFAPI
+    component [Qwen2.5-7B-Instruct\n(Together AI Backend)] as QwenModel
+}
+
+node "Express.js Server\n(localhost / VPS)" as ExpressNode {
+    component [Liveblocks Auth\nEndpoint] as LBAuth
+    component [WebSocket Server\n(ws + node-pty)] as WSSPTY
+}
+
+' Connections
+SPA_A --> GoTrue : "HTTPS\n(Auth API)"
+SPA_A --> PGDB : "HTTPS\n(REST API)"
+SPA_A --> SRT : "WSS\n(Realtime\nSubscriptions)"
+Yjs_A <--> LBWS : "WSS\n(CRDT Sync)"
+LBWS <--> LBStore : "Persist\nState Vectors"
+Yjs_B <--> LBWS : "WSS\n(CRDT Sync)"
+
+SPA_A --> HFAPI : "HTTPS\n(AI Prompt)"
+HFAPI --> QwenModel : "Internal\nInference"
+
+SPA_A --> LBAuth : "HTTPS\n(Get LB Token)"
+Xterm_A --> WSSPTY : "WSS\n(PTY I/O)"
+
+PGDB --> RLS : "Enforces\nPolicies"
+
+SPA_B --> GoTrue : "HTTPS"
+SPA_B --> PGDB : "HTTPS"
+SPA_B --> SRT : "WSS"
+
+@enduml

@@ -1,0 +1,91 @@
+@startuml CollabCodeHub_ClassDiagram
+
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+title CollabCodeHub - Class Diagram (Database & Domain Model)
+
+class Profile {
+    +id : UUID <<PK, FK>>
+    +username : TEXT <<UNIQUE>>
+    +full_name : TEXT
+    +avatar_url : TEXT
+    +updated_at : TIMESTAMPTZ
+}
+
+class Room {
+    +id : UUID <<PK>>
+    +name : TEXT
+    +slug : TEXT <<UNIQUE>>
+    +created_at : TIMESTAMPTZ
+    +created_by : UUID <<FK>>
+    +settings : JSONB
+}
+
+class RoomMember {
+    +id : UUID <<PK>>
+    +room_id : UUID <<FK>>
+    +user_id : UUID <<FK>>
+    +role : TEXT {admin, member}
+    +joined_at : TIMESTAMPTZ
+    --
+    <<UNIQUE>> (room_id, user_id)
+}
+
+class Message {
+    +id : UUID <<PK>>
+    +room_id : UUID <<FK>>
+    +user_id : UUID <<FK>>
+    +content : TEXT
+    +created_at : TIMESTAMPTZ
+}
+
+class Task {
+    +id : UUID <<PK>>
+    +room_id : UUID <<FK>>
+    +title : TEXT
+    +description : TEXT
+    +status : TEXT {todo, in-progress, done, archived}
+    +assigned_to : UUID <<FK>>
+    +position : INTEGER
+    +created_at : TIMESTAMPTZ
+    +updated_at : TIMESTAMPTZ
+}
+
+class AIAgent <<Service>> {
+    -HF_BASE_URL : string
+    -QWEN_MODEL : string
+    +runAIAgent(command, context, apiKey) : AgentResponse
+    -buildSystemPrompt(workspaceContext) : string
+}
+
+class AgentFileOp <<ValueObject>> {
+    +action : {create, update, delete}
+    +name : string
+    +content? : string
+}
+
+class AgentResponse <<ValueObject>> {
+    +message : string
+    +files : AgentFileOp[]
+}
+
+class LiveblocksStorage <<External>> {
+    +layers : LiveMap<string, Layer>
+    +layerIds : LiveList<string>
+    +files : LiveMap<string, FileData>
+}
+
+Profile "1" -- "0..*" Room : creates >
+Profile "1" -- "0..*" RoomMember : joins >
+Room "1" -- "0..*" RoomMember : has >
+Room "1" -- "0..*" Message : contains >
+Room "1" -- "0..*" Task : tracks >
+Profile "1" -- "0..*" Task : assigned to <
+
+AIAgent ..> AgentResponse : returns
+AgentResponse o-- "0..*" AgentFileOp : contains
+AIAgent ..> LiveblocksStorage : modifies files in
+
+@enduml

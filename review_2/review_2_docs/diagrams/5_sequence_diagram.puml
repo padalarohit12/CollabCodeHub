@@ -1,0 +1,72 @@
+@startuml CollabCodeHub_SequenceDiagram
+
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+
+title CollabCodeHub - Sequence Diagram (Real-Time Edit + AI Agent Flow)
+
+actor "User A" as UA
+participant "React SPA\n(Browser A)" as FEA
+participant "Yjs CRDT\n(Local Doc)" as YJSA
+participant "Liveblocks\nWebSocket" as LB
+participant "Yjs CRDT\n(Local Doc)" as YJSB
+participant "React SPA\n(Browser B)" as FEB
+actor "User B" as UB
+
+participant "Supabase\nAuth" as SA
+participant "PostgreSQL\n(RLS)" as PG
+participant "aiAgent.ts" as AI
+participant "HuggingFace\nAPI" as HF
+
+== Authentication Flow ==
+UA -> FEA : Enter credentials
+FEA -> SA : POST /auth/token
+SA -> PG : Validate & create session
+PG --> SA : JWT + Profile
+SA --> FEA : Session token
+FEA --> UA : Redirect to Dashboard
+
+== Room Join & CRDT Initialization ==
+UA -> FEA : Click "Join Room"
+FEA -> PG : SELECT room WHERE slug = ?
+PG -> PG : RLS check (is_room_member)
+PG --> FEA : Room data
+FEA -> LB : Connect WebSocket (room_id)
+LB -> YJSA : Sync initial state vector
+YJSA --> FEA : Hydrate Monaco Editor
+
+UB -> FEB : Join same room
+FEB -> LB : Connect WebSocket (room_id)
+LB -> YJSB : Sync initial state vector
+YJSB --> FEB : Hydrate Monaco Editor
+
+== Real-Time Collaborative Editing ==
+UA -> FEA : Type code "const x = 42;"
+FEA -> YJSA : Apply local delta
+YJSA -> LB : Broadcast CRDT update
+LB -> YJSB : Deliver delta to peer
+YJSB -> FEB : Merge & render update
+FEB --> UB : See User A's code instantly
+
+UB -> FEB : Type code "console.log(x);"
+FEB -> YJSB : Apply local delta
+YJSB -> LB : Broadcast CRDT update
+LB -> YJSA : Deliver delta to peer
+YJSA -> FEA : Merge & render update
+FEA --> UA : See User B's code instantly
+
+== AI Agent Code Generation ==
+UA -> FEA : Open AI Pulse, type\n"Create a React Button component"
+FEA -> AI : runAIAgent(command, workspaceContext, apiKey)
+AI -> AI : buildSystemPrompt()\n(serialize fileTree + contents)
+AI -> HF : POST /v1/chat/completions\n{model: Qwen2.5-7B, messages: [...]}
+HF --> AI : JSON response:\n{message: "Created Button.tsx",\nfiles: [{action: "create",\nname: "Button.tsx", content: "..."}]}
+AI -> AI : Parse JSON, extract AgentFileOp[]
+AI --> FEA : AgentResponse
+FEA -> YJSA : Apply file create op\nto LiveMap<FileData>
+YJSA -> LB : Broadcast new file delta
+LB -> YJSB : Deliver file creation
+YJSB -> FEB : Render new file in FileExplorer
+FEB --> UB : See AI-generated Button.tsx appear
+
+@enduml

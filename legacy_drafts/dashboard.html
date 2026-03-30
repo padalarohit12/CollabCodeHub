@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CollabCodeHub</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    },
+                    colors: {
+                        background: '#030303',
+                        sidebar: '#050505',
+                        card: '#0A0A0A',
+                        brand: {
+                            DEFAULT: '#1DCD9F',
+                            dim: 'rgba(29, 205, 159, 0.1)',
+                            glow: 'rgba(29, 205, 159, 0.5)'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base & Scrollbar */
+        body { background-color: #030303; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1DCD9F; }
+
+        /* Glass Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* Sidebar Nav Item */
+        .nav-item {
+            position: relative;
+            transition: all 0.3s ease;
+            border-left: 2px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: linear-gradient(90deg, rgba(29, 205, 159, 0.1) 0%, transparent 100%);
+            border-left-color: #1DCD9F;
+            color: #1DCD9F;
+        }
+        .nav-item i { transition: transform 0.3s ease; }
+        .nav-item:hover i { transform: translateX(4px); }
+
+        /* Tech Stack Selection Card */
+        .tech-card {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        .tech-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+        .tech-card.selected {
+            border-color: #1DCD9F;
+            background: rgba(29, 205, 159, 0.1);
+            box-shadow: 0 0 15px rgba(29, 205, 159, 0.2);
+        }
+
+        /* Spotlight Input (Reused for consistency) */
+        .input-spotlight {
+            position: relative;
+            background: rgba(255,255,255,0.03);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .input-spotlight::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            z-index: 0;
+            background: radial-gradient(150px circle at var(--x, 0) var(--y, 0), rgba(29, 205, 159, 0.3), transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .input-spotlight:hover::before, .input-spotlight:focus-within::before { opacity: 1; }
+        .input-inner { position: relative; z-index: 1; background: #0A0A0A; margin: 1px; border-radius: 0.45rem; }
+
+        /* Contribution Grid */
+        .contrib-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .contrib-cell {
+            width: 100%;
+            padding-bottom: 100%; /* Aspect Ratio 1:1 */
+            border-radius: 2px;
+            background: #161616;
+        }
+    </style>
+</head>
+<body class="text-white flex h-screen antialiased selection:bg-brand selection:text-black">
+
+    <aside class="w-64 bg-sidebar border-r border-white/5 flex flex-col fixed inset-y-0 z-20 hidden md:flex">
+        <div class="h-20 flex items-center px-6 border-b border-white/5">
+            <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center mr-3 shadow-[0_0_15px_rgba(29,205,159,0.3)]">
+                <i data-lucide="code-2" class="w-5 h-5 text-black"></i>
+            </div>
+            <span class="font-display font-bold text-lg tracking-tight">CollabCode</span>
+        </div>
+
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a href="#" class="nav-item active flex items-center px-4 py-3 text-sm font-medium rounded-lg text-white">
+                <i data-lucide="layout-grid" class="w-5 h-5 mr-3"></i> Dashboard
+            </a>
+            <a href="#" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:text-white">
+                <i data-lucide="folder-open" class="w-5 h-5 mr-3"></i> Projects
+            </a>
+            <a href="#" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:text-white">
+                <i data-lucide="users" class="w-5 h-5 mr-3"></i> Teams
+            </a>
+            <a href="#" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:text-white">
+                <i data-lucide="message-square" class="w-5 h-5 mr-3"></i> Messages
+                <span class="ml-auto bg-brand/20 text-brand text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+            </a>
+            <a href="#" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-400 hover:text-white">
+                <i data-lucide="settings" class="w-5 h-5 mr-3"></i> Settings
+            </a>
+        </nav>
+
+        <div class="px-6 py-6 border-t border-white/5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity</span>
+                <span class="text-xs text-brand">Live</span>
+            </div>
+            <div class="contrib-grid" id="contrib-grid">
+                </div>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand to-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-black">
+                    JD
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">John Dev</p>
+                    <p class="text-xs text-gray-500 truncate">Pro Plan</p>
+                </div>
+                <i data-lucide="log-out" class="w-4 h-4 text-gray-500 group-hover:text-white transition-colors"></i>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 md:ml-64 relative flex flex-col h-screen overflow-hidden">
+        
+        <div class="absolute top-0 left-0 w-full h-[500px] bg-brand/5 blur-[120px] pointer-events-none"></div>
+
+        <header class="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#030303]/80 backdrop-blur-md z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden p-2 text-gray-400 hover:text-white"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                <h1 class="text-xl font-medium hidden sm:block">Welcome back, <span class="text-brand">John</span></h1>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="input-spotlight w-64 hidden md:block">
+                    <div class="input-inner flex items-center px-3 h-10">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-500 mr-2"></i>
+                        <input type="text" placeholder="Search projects..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder:text-gray-600">
+                    </div>
+                </div>
+                
+                <button class="relative p-2 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-black"></span>
+                </button>
+                
+                <button onclick="openModal()" class="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(29,205,159,0.3)]">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>New Project</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 scroll-smooth" id="scroll-container">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="glass-panel p-6 rounded-2xl relative overflow-hidden animate-slide-up" style="animation-delay: 0ms;">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="p-2 bg-brand/10 rounded-lg text-brand"><i data-lucide="folder-git-2" class="w-6 h-6"></i></div>
+                        <span class="text-gray-400 text-sm font-medium">Active Projects</span>
+                    </div>
+                    <div class="text-4xl font-display font-bold counter" data-target="12">0</div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl relative overflow-hidden animate-slide-up" style="animation-delay: 100ms;">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="p-2 bg-blue-500/10 rounded-lg text-blue-500"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                        <span class="text-gray-400 text-sm font-medium">Hours Coded</span>
+                    </div>
+                    <div class="text-4xl font-display font-bold counter" data-target="145">0</div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl relative overflow-hidden animate-slide-up" style="animation-delay: 200ms;">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="p-2 bg-purple-500/10 rounded-lg text-purple-500"><i data-lucide="users" class="w-6 h-6"></i></div>
+                        <span class="text-gray-400 text-sm font-medium">Collaborators</span>
+                    </div>
+                    <div class="text-4xl font-display font-bold counter" data-target="8">0</div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-6 animate-slide-up" style="animation-delay: 300ms;">
+                <h2 class="text-lg font-semibold">Recent Workspaces</h2>
+                <div class="flex gap-2">
+                    <button class="p-2 text-white bg-white/5 rounded-lg border border-white/5"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
+                    <button class="p-2 text-gray-500 hover:text-white transition-colors"><i data-lucide="list" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+
+            <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12 animate-slide-up" style="animation-delay: 400ms;">
+                
+                <div onclick="openModal()" class="border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[220px] cursor-pointer hover:border-brand/50 hover:bg-brand/5 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="plus" class="w-6 h-6 text-gray-400 group-hover:text-brand"></i>
+                    </div>
+                    <h3 class="font-medium text-gray-300">Create New Project</h3>
+                    <p class="text-sm text-gray-500 mt-1">Start from scratch or import</p>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 relative group cursor-pointer" data-tilt>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-[#2D2D2D] flex items-center justify-center border border-white/10">
+                            <i data-lucide="boxes" class="w-5 h-5 text-blue-400"></i>
+                        </div>
+                        <div class="px-2 py-1 rounded text-[10px] font-bold bg-green-500/10 text-green-500 border border-green-500/20">ONLINE</div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 group-hover:text-brand transition-colors">Portfolio V2</h3>
+                    <p class="text-sm text-gray-400 mb-6 line-clamp-2">React based portfolio website with Framer Motion animations.</p>
+                    
+                    <div class="flex items-center justify-between mt-auto border-t border-white/5 pt-4">
+                        <div class="flex -space-x-2">
+                            <div class="w-6 h-6 rounded-full bg-gray-700 border border-black ring-2 ring-[#0A0A0A]"></div>
+                            <div class="w-6 h-6 rounded-full bg-gray-600 border border-black ring-2 ring-[#0A0A0A]"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">Edited 2m ago</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 relative group cursor-pointer" data-tilt>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-[#2D2D2D] flex items-center justify-center border border-white/10">
+                            <i data-lucide="server" class="w-5 h-5 text-yellow-400"></i>
+                        </div>
+                        <div class="px-2 py-1 rounded text-[10px] font-bold bg-gray-500/10 text-gray-400 border border-gray-500/20">OFFLINE</div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 group-hover:text-brand transition-colors">Backend API</h3>
+                    <p class="text-sm text-gray-400 mb-6 line-clamp-2">Node.js Express server with MongoDB connection and JWT auth.</p>
+                    
+                    <div class="flex items-center justify-between mt-auto border-t border-white/5 pt-4">
+                        <div class="flex -space-x-2">
+                            <div class="w-6 h-6 rounded-full bg-gray-700 border border-black ring-2 ring-[#0A0A0A]"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">Edited 5h ago</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="new-project-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop" onclick="closeModal()"></div>
+        
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="glass-panel rounded-2xl p-8 border border-white/10 shadow-2xl bg-[#0A0A0A]">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-display font-bold">Initialize Workspace</h2>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Project Name</label>
+                        <div class="input-spotlight">
+                            <div class="input-inner flex items-center px-4 h-12">
+                                <input type="text" id="project-name" placeholder="e.g., ai-chat-bot" class="bg-transparent border-none outline-none text-white w-full placeholder:text-gray-700">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-3">Select Stack</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="tech-card rounded-xl p-4 flex flex-col items-center gap-2 selected" onclick="selectStack(this, 'node')">
+                                <i data-lucide="server" class="w-8 h-8 text-green-500"></i>
+                                <span class="text-sm font-medium">Node.js</span>
+                            </div>
+                            <div class="tech-card rounded-xl p-4 flex flex-col items-center gap-2" onclick="selectStack(this, 'python')">
+                                <i data-lucide="terminal" class="w-8 h-8 text-blue-500"></i>
+                                <span class="text-sm font-medium">Python</span>
+                            </div>
+                            <div class="tech-card rounded-xl p-4 flex flex-col items-center gap-2" onclick="selectStack(this, 'react')">
+                                <i data-lucide="layout" class="w-8 h-8 text-cyan-400"></i>
+                                <span class="text-sm font-medium">React</span>
+                            </div>
+                            <div class="tech-card rounded-xl p-4 flex flex-col items-center gap-2" onclick="selectStack(this, 'go')">
+                                <i data-lucide="zap" class="w-8 h-8 text-teal-300"></i>
+                                <span class="text-sm font-medium">Go</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="createProject()" id="create-btn" class="w-full h-12 rounded-xl bg-brand text-black font-bold hover:bg-[#15e0ab] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(29,205,159,0.2)] mt-4">
+                        <span id="btn-text">Launch Environment</span>
+                        <i data-lucide="rocket" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Initialize Icons
+        lucide.createIcons();
+
+        // 2. Initialize Tilt
+        VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+            max: 5, speed: 400, glare: true, "max-glare": 0.1, scale: 1.02
+        });
+
+        // 3. Spotlight Inputs Logic
+        document.querySelectorAll('.input-spotlight').forEach(container => {
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                container.style.setProperty('--x', `${x}px`);
+                container.style.setProperty('--y', `${y}px`);
+            });
+        });
+
+        // 4. Modal Logic
+        const modal = document.getElementById('new-project-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalContent.classList.remove('opacity-0', 'scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalBackdrop.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 5. Tech Stack Selection
+        function selectStack(el, type) {
+            document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        // 6. Simulate Create Project
+        function createProject() {
+            const btn = document.getElementById('create-btn');
+            const btnText = document.getElementById('btn-text');
+            const originalText = btnText.innerText;
+            const inputName = document.getElementById('project-name').value || "Untitled Project";
+
+            // Loading State
+            btnText.innerText = "Initializing Container...";
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            
+            setTimeout(() => {
+                // Reset Modal
+                btnText.innerText = originalText;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                closeModal();
+
+                // Add Card to Grid (Simulated)
+                const grid = document.getElementById('project-grid');
+                const newCard = document.createElement('div');
+                newCard.className = "glass-panel rounded-2xl p-6 relative group cursor-pointer animate-fade-in";
+                newCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-[#2D2D2D] flex items-center justify-center border border-white/10">
+                            <i data-lucide="loader" class="w-5 h-5 text-brand animate-spin"></i>
+                        </div>
+                        <div class="px-2 py-1 rounded text-[10px] font-bold bg-brand/10 text-brand border border-brand/20">INIT</div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 group-hover:text-brand transition-colors">${inputName}</h3>
+                    <p class="text-sm text-gray-400 mb-6">Booting up container environment...</p>
+                    <div class="flex items-center justify-between mt-auto border-t border-white/5 pt-4">
+                        <span class="text-xs text-gray-500">Just now</span>
+                    </div>
+                `;
+                
+                // Insert after the "Create New" button
+                grid.insertBefore(newCard, grid.children[1]);
+                
+                // Re-init icons and tilt for new element
+                lucide.createIcons();
+                VanillaTilt.init(newCard, { max: 5, speed: 400, glare: true, "max-glare": 0.1, scale: 1.02 });
+
+            }, 1500);
+        }
+
+        // 7. Counter Animation for Stats
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            const target = +counter.getAttribute('data-target');
+            const speed = 200; // The lower the slower
+            const increment = target / speed;
+            
+            const updateCount = () => {
+                const count = +counter.innerText;
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+
+        // 8. Generate Random Contribution Graph (Sidebar)
+        const contribGrid = document.getElementById('contrib-grid');
+        for (let i = 0; i < 49; i++) { // 7x7 grid roughly
+            const cell = document.createElement('div');
+            cell.className = 'contrib-cell';
+            // Randomly assign activity levels
+            const rand = Math.random();
+            if (rand > 0.8) cell.style.background = '#1DCD9F'; // High activity
+            else if (rand > 0.6) cell.style.background = 'rgba(29, 205, 159, 0.5)';
+            else if (rand > 0.4) cell.style.background = 'rgba(29, 205, 159, 0.2)';
+            else cell.style.background = '#161616'; // None
+            
+            contribGrid.appendChild(cell);
+        }
+
+    </script>
+</body>
+</html>

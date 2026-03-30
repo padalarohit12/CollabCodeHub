@@ -1,0 +1,78 @@
+@startuml CollabCodeHub_ComponentDiagram
+
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+skinparam componentStyle uml2
+
+title CollabCodeHub - Component Diagram
+
+package "Frontend (React 19 + Vite SPA)" {
+    component [AuthPage] as Auth
+    component [Dashboard] as Dash
+    component [LandingPage] as Land
+    component [RoomWorkspace] as RW
+
+    package "Workspace Modules" {
+        component [CollaborativeEditor\n(Monaco + y-monaco)] as Editor
+        component [FileExplorer\n(LiveMap<FileData>)] as FE
+        component [ChatModule\n(Supabase Realtime)] as Chat
+        component [TaskBoard\n(Kanban DnD)] as Tasks
+        component [Whiteboard\n(Canvas Layers)] as WB
+        component [AIPulse\n(AI Chat UI)] as AIP
+        component [CollaborativeTerminal\n(xterm.js)] as Term
+        component [LivePreview\n(iframe sandbox)] as LP
+        component [CommandPalette] as CP
+    }
+}
+
+package "Real-Time Sync Layer" {
+    component [Liveblocks Provider\n(WebSocket)] as LBP
+    component [Yjs CRDT Engine\n(y-protocols)] as YJS
+}
+
+package "Backend as a Service (Supabase Cloud)" {
+    component [Supabase Auth\n(JWT / OAuth)] as SAuth
+    component [PostgreSQL\n(profiles, rooms,\nroom_members)] as PG
+    component [Supabase Realtime\n(messages, tasks\npublication)] as SRT
+    component [Row-Level Security\n(is_room_member())] as RLS
+}
+
+package "AI Intelligence Layer" {
+    component [aiAgent.ts\n(Prompt Builder +\nJSON Parser)] as Agent
+    component [HuggingFace Router\n(Qwen2.5-7B-Instruct)] as HF
+}
+
+package "Execution Server (Express.js)" {
+    component [Express API\n(Liveblocks Auth\nEndpoint)] as EXP
+    component [WebSocket Server\n(PTY Terminal)] as WSS
+}
+
+' Connections
+Auth --> SAuth : "login / register"
+Dash --> PG : "fetch rooms"
+RW --> Editor
+RW --> FE
+RW --> Chat
+RW --> Tasks
+RW --> WB
+RW --> AIP
+RW --> Term
+RW --> LP
+RW --> CP
+
+Editor --> YJS : "bind y-monaco"
+YJS <--> LBP : "CRDT sync"
+FE --> LBP : "LiveMap<FileData>"
+
+Chat --> SRT : "subscribe messages"
+Tasks --> SRT : "subscribe tasks"
+
+AIP --> Agent : "user command +\nworkspace context"
+Agent --> HF : "POST /chat/completions"
+Agent --> YJS : "apply file ops"
+
+PG --> RLS : "enforces policies"
+EXP --> LBP : "auth endpoint"
+Term --> WSS : "PTY I/O"
+
+@enduml

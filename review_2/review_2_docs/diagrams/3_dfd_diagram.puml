@@ -1,0 +1,50 @@
+@startuml CollabCodeHub_DFD
+
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+
+title CollabCodeHub - Data Flow Diagram (Level 1)
+
+' External Entities
+rectangle "User A\n(Browser)" as UserA #LightBlue
+rectangle "User B\n(Browser)" as UserB #LightBlue
+rectangle "HuggingFace\nInference API" as HF #LightYellow
+
+' Processes
+usecase "1.0\nAuthentication\nModule" as P1
+usecase "2.0\nRoom Management\n& Authorization" as P2
+usecase "3.0\nCollaborative\nEditor Engine" as P3
+usecase "4.0\nChat & Task\nModule" as P4
+usecase "5.0\nAI Agent\nMiddleware" as P5
+
+' Data Stores
+database "Supabase PostgreSQL\n(profiles, rooms,\nroom_members)" as DS1
+database "Supabase Realtime\n(messages, tasks)" as DS2
+database "Liveblocks\nYjs CRDT Store\n(files, layers)" as DS3
+
+' Data Flows
+UserA --> P1 : "Email / Password\nCredentials"
+P1 --> DS1 : "Validate & Store\nProfile + JWT"
+P1 --> UserA : "Session Token\n(JWT)"
+
+UserA --> P2 : "Create / Join\nRoom Request"
+P2 --> DS1 : "Insert room,\nroom_members"
+P2 --> UserA : "Room ID / Slug"
+
+UserA --> P3 : "Code Keystrokes\n(Yjs Delta)"
+P3 --> DS3 : "Broadcast CRDT\nState Vector"
+DS3 --> P3 : "Merged Document\nState"
+P3 --> UserB : "Synced Code\n+ Remote Cursors"
+
+UserA --> P4 : "Chat Message /\nTask Update"
+P4 --> DS2 : "Insert message\nor update task"
+DS2 --> P4 : "Realtime\nBroadcast"
+P4 --> UserB : "New Message /\nTask State Change"
+
+UserA --> P5 : "AI Prompt +\nWorkspace Context"
+P5 --> HF : "System Prompt +\nUser Command"
+HF --> P5 : "JSON Response\n(AgentFileOp[])"
+P5 --> DS3 : "Apply file ops\nto Yjs Document"
+P5 --> UserA : "Agent Message +\nGenerated Code"
+
+@enduml

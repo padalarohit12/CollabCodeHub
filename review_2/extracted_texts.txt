@@ -1,0 +1,241 @@
+================
+FILE: 21CSP302L review2 rubrics.docx
+================
+SRM INSTITUTE OF SCIENCE AND TECHNOLOGY
+SCHOOL OF COMPUTING
+PROJECT – 2025- 2026
+21CSP302L – MINOR PROJECT
+VI Semester
+MARKS SPLIT UP FOR THE SECOND REVIEW – 21CSP302L PROJECT
+#R2 : Rubrics for Review 2
+Maximum Marks : 40
+GA – Group Assessment	IA – Individual Assessment
+Marks specified in the brackets are the maximum marks that can be gained if the student satisfy the relevant descriptor.
+Guidelines for Generating Technical Document with AI support*
+Utilize AI for Information Gathering: Students can use AI to collect relevant data and technical details for documentation; however, the information should be articulated by them according to the flow of work and the structure of the document.
+Verify Accuracy and Reliability: AI may produce inaccurate or biased information. Always verify the facts and relevance of AI-generated content before including it in the final documentation.
+Fact-Check AI Content: Double-check AI-generated content for factual accuracy by validating data, claims, and conclusions through trusted and reliable sources to maintain the document's integrity.
+Follow Citation Guidelines: Students must properly cite all external sources, whether referred by them or AI, following the required citation style.
+PI Code | PI | Parameter | Marks | Excellent  (40-33) | Good  (32 -25) | Average  (24-17) | Poor  (16-0)
+4.5.1 | Design and develop appropriate procedures/methodologies based on the study objectives -IA | Design and System Development | 10 | Procedures and tools are exceptionally well-designed, thoroughly aligned with the objectives, and creatively adapted to solve engineering problems (10) | Procedures and tools are appropriate and mostly aligned with the objectives, though some areas could be improved for greater clarity or efficiency in solving the engineering problem. (8) | Procedures and tools meet the basic objectives but lack depth, refinement, or sufficient adaptation, limiting their effectiveness in solving the engineering problem. (6) | Procedures and tools are poorly developed or inadequately aligned with the objectives, making them ineffective or incomplete in addressing the engineering problem. (4)
+5.1.2 | Create/adapt/modify/extend tools and techniques to solve engineering problems - IA | Design and System Development | 10 | Procedures and tools are exceptionally well-designed, thoroughly aligned with the objectives, and creatively adapted to solve engineering problems (10) | Procedures and tools are appropriate and mostly aligned with the objectives, though some areas could be improved for greater clarity or efficiency in solving the engineering problem. (8) | Procedures and tools meet the basic objectives but lack depth, refinement, or sufficient adaptation, limiting their effectiveness in solving the engineering problem. (6) | Procedures and tools are poorly developed or inadequately aligned with the objectives, making them ineffective or incomplete in addressing the engineering problem. (4)
+5.3.2 | Verify the credibility of results from tool use with reference to the accuracy and limitations, and the assumptions inherent in their use. -IA | Testing / Result Analysis | 5 | Results are thoroughly verified through multiple reliable methods, ensuring high accuracy and consistency, with clear evidence supporting their credibility. (5) | Results are generally verified using appropriate methods, though there may be minor gaps in validation or supporting evidence. (4) | Results are somewhat verified, but the methods used are limited or lack sufficient evidence to fully confirm their credibility. (3) | Results are not adequately verified, with significant gaps in the methods used or a lack of supporting evidence to establish their credibility. (2)
+10.5.2 | Deliver effective oral presentations to technical and non-technical audiences-IA | Technical Presentation | 5 | The presentation is highly organized, clear, and engaging, with in-depth technical content, well-supported by visuals. (5) | The presentation is well-organized, clear, and covers the key technical points, though some parts could use better explanation or visuals. (4) | The presentation is somewhat organized, but some sections lack clarity or sufficient technical detail, and visuals may be lacking. (3) | Presentation was prepared and attempted (2)
+10.4.2 | Produce clear, well-constructed, and well-supported written engineering documents-GA | Technical Documentation (Architecture, Functional, Test Case and Retrospective documents) | 5 | The document is exceptionally clear, well-organized, and thoroughly supported with strong technical content, citations, and data, demonstrating a high level of professionalism and accuracy. (5) | The document is clear, well-organized, and adequately supported with technical content and references (4) | The document lacks some clarity, organization, or depth, with limited supporting content or citations and some errors. (3) | The document is poorly organized, and lacks sufficient technical support or citations (2)
+8.2.2 | Examine and apply moral & ethical principles- GA | Ethics in coding, Documentation, Usage of data sources | 5 | Clearly identifies ethical issues and consistently applies moral principles in all decisions (5) | Identifies most ethical concerns and applies moral principles in most cases. (4) | Shows limited understanding of ethical issues; application is inconsistent. (3) | Fails to recognize or apply basic moral and ethical principles. (2)
+10.6.2 | Use project management tools to schedule an engineering project, so it is completed on time and on budget. - GA | Agile Board using M.S.Planner | 5 | Project management tools are expertly utilized to create a detailed and realistic schedule, ensuring all tasks are completed on time with effective resource management and timely adjustments. (5) | Project management tools are effectively used to create a schedule, though there may be minor issues with task prioritization or resource allocation that could impact deadlines (4) | Project management tools are used to create a basic schedule, but the timeline or resource allocation may not fully account for potential delays, affecting on-time completion. (3) | Project management tools are poorly used or not utilized, leading to an unclear schedule with ineffective resource allocation, jeopardizing on-time project completion. (2)
+12.5.2 | Recognize the need and be able to clearly explain why it is vitally important to keep current regarding new developments in your field -GA | Lifelong Learning | 5 | Recognizes the need to stay current in the field and clearly articulates why it is vitally important, supported by detailed examples and insights. (5) | Recognizes the need to stay current and explains its importance with clear reasoning, though may lack depth or specific examples. (4) | Recognizes the need to stay current but provides a basic explanation of its importance without much clarity or detail (3) | Struggles to recognize the need to stay current or fails to provide a clear explanation of its importance (2)
+
+
+================
+FILE: Architecture Document (1).docx
+================
+Architecture Document
+(The student team can select one of the following architectures for their project and they should provide a detailed explanation: Microservices, Event-Driven Architecture, Serverless, or Monolithic architectures. Additionally, they should create relevant diagrams, such as use case, class, DFD, component, sequence, and deployment diagrams, to support their project.)
+
+
+================
+FILE: Functional Document (1).docx
+================
+Functional Document
+Introduction
+Product Goal 
+Demography (Users, Location)
+Business Processes 
+Features 
+Feature #1 
+Description 
+User Story
+Authorization Matrix 
+Assumptions 
+Example 1  -  Online Learning Platform - project
+1. Introduction
+The Online Learning Platform project aims to revolutionize remote education by enhancing user experience and introducing new features. Sprint 1 is focused on implementing critical improvements to the user authentication system and optimizing the course search functionality.
+2. Product Goal
+The primary goal of this sprint is to enhance the security of user accounts and streamline the process of discovering relevant courses, contributing to the overarching objective of providing a seamless online learning experience.
+3. Demography (Users, Location)
+Users
+Target Users: Students, educators, and administrators
+User Characteristics: Diverse age groups, varying technical proficiency
+Location
+Target Location: Worldwide
+4. Business Processes
+The key business processes include:
+User Registration and Authentication:
+Process for users to register securely and authenticate their accounts.
+Course Discovery:
+Process for users to search, filter, and enroll in courses.
+Content Management:
+Process for educators to create and manage course content.
+5. Features
+This sprint will focus on implementing the following key features:
+Enhanced User Authentication:
+Enable two-factor authentication for added security.
+Implement account recovery options.
+Course Search Optimization:
+Introduce category filters for courses.
+Improve sorting options based on relevance and popularity.
+6. Authorization Matrix
+Define the roles and their corresponding access levels:
+7. Assumptions
+The development environment and infrastructure will remain stable throughout the sprint.
+Stakeholders, including administrators and educators, will be available for feedback and clarification.
+Team members possess the necessary skills and resources to complete the assigned tasks.
+Sprint Functional Document for Health and Fitness app
+1. Introduction
+The Health and Fitness App project focuses on enhancing the user experience by introducing personalized workout plans and nutrition tracking. Sprint 2 (example) aims to implement advanced features such as real-time workout tracking and integration with wearable devices.
+2. Product Goal
+The primary goal of this sprint is to elevate the health and fitness app's functionality by incorporating real-time workout tracking capabilities and seamless integration with popular wearable devices. This aligns with the overarching project objective of providing users with a comprehensive and personalized fitness experience.
+3. Demography (Users, Location)
+Users
+Target Users: Fitness enthusiasts, casual users, and nutrition-conscious individuals
+User Characteristics: Diverse fitness goals, various fitness levels
+Location
+Target Location: Global usage with a focus on health-conscious communities
+4. Business Processes
+Key business processes include:
+User Onboarding:
+Process for users to create profiles and set fitness goals.
+Workout Planning:
+Process for users to receive personalized workout plans.
+Nutrition Tracking:
+Process for users to log and track their daily nutrition intake.
+5. Features
+This sprint will focus on implementing the following key features:
+Real-time Workout Tracking:
+Integrate sensors for real-time tracking of exercises.
+Provide instant feedback on form and performance.
+Wearable Device Integration:
+Enable seamless synchronization with popular wearable devices.
+Utilize device data for more accurate fitness insights.
+6. Authorization Matrix
+Define the roles and their corresponding access levels:
+7. Assumptions
+The development environment and infrastructure will remain stable during the sprint.
+Users are open to sharing data with wearable devices for an enhanced fitness experience.
+Team members possess the necessary skills and resources to complete the assigned tasks.
+Role | Access Level
+Administrator | Full access to user and course management
+Educator | Access to content creation and management tools
+Student | Access to course enrolment and personal settings
+Guest User | Limited access to browse courses and view public content
+Role | Access Level
+Standard User | Access to personalized fitness plans and tracking features
+Premium User | Additional access to advanced tracking and integration features
+Coach | Access to user progress data for coaching purposes
+Admin | Full access to user management and app settings
+
+
+================
+FILE: Instruction for Second review 26 - minor projects.docx
+================
+SRM INSTITUTE OF SCIENCE AND TECHNOLOGY
+SCHOOL OF COMPUTING
+VI SEMESTER –21CSP302L -PROJECT 
+Review Date: 28th March 2026
+INSTRUCTIONS TO STUDENTS FOR SECOND REVIEW 
+The Second Review will be conducted on 28th March 2026
+Students are required to present their project with a demonstration in front of the panel.
+Students are required to submit a Review PPT and an updated research article or patent document with publication or filing status during the review process.
+Research Projects Guidelines: 
+The students are instructed to prepare a presentation for 20 minutes along with a complete demonstration of the project, with the following contents.
+              	   4.1.a From their research objectives, the students must refine the product backlog and create relevant user stories with acceptance 
+                                      criteria using MS   Planner, treating each objective as an epic. Additionally, they must implement the objectives (epics). Also, 
+                                      they have to prepare the following documents for the Second review
+                             4.1.b Daily Scrum (Daily call progress of the list of activities – otherwise called updates of the standup meeting)
+                             4.1.c Functional Document
+                             4.1.d Architecture Document (High-level Design and Detailed Design)
+                             4.1.e Outcome of objectives/ Result Analysis
+                            4.1.f Sprint Retrospective document
+ Students have to report their progress to the respective guides weekly once without fail. 
+For Research Projects, an Updated Research Article in IEEE format must be submitted during review.
+Product Development projects:
+                5.1 The students are instructed to prepare a presentation for 20 minutes along with a complete demonstration of the project with the 
+following contents.
+                        5.1.a Product Backlog Refinement – Refinement of Product backlog using MS Planner with completed user stories and acceptance criteria 
+                         5.1.b Sprint Backlog refinement – Committed User Stories for all Sprints with acceptance criteria and a list of tasks developed based on
+                                   the User Stories.
+                          5.1.c Sprint Activities  
+Daily Scrum (Daily call progress of the list of activities – otherwise called updates of standup meeting)
+Functional Document
+UI Design
+Architecture Document 
+Functional Test case Document
+Demo of the Deliverables 
+Sprint retrospective document
+Students must report their progress to their respective guides during the daily standup meeting and update the details in MS Planner using One Note 
+with daily scrum reports.
+         5.3 Students must submit the updated patent form during the review
+. Students are expected to attend the review in person 
+. It is mandatory to follow the proper dress code as per the norms for all the reviews.
+        8.Absence for project review will be viewed seriously.
+        9.All the projects must be published either in the conference or patented before 30th April 2025 and it is responsibility of the students and guide.
+       10.Evaluation / Assessment of Students will the based on induced Contribution only. 
+       11.The Documents of Points no. 4 and 5 will be considered as Review Reports. 
+       12.Report formatting guidelines may be referred though the link shared  
+https://webstor.srmist.edu.in/web_assets/srm_mainsite/files/2018/manual_for_preparation_of_phd-thesis-2018.pdf
+REVIEW SCHEDULE 
+Auditor Professors
+Dr. T.S. Shiny Angel/ CINTEL
+Dr. G. Senthil Kumar/CINTEL
+REVIEW | DATES
+Project Review – I | 28.02.2026 Saturday
+Project Review - II | 28th March 2026 Saturday
+Project Report Evaluation with Viva Voce | April 2026
+
+
+================
+FILE: Functional Test case Template (1).xlsx
+================
+--- Sheet: Sheet1 ---
+ |  |  | Functional Test Case Template |  |  |  | 
+ | Feature | Test Case  | Steps to execute test case  | Expected Output | Actual Output | Status | More Information
+ | User Login | Valid User Login | Open the application's login page.
+
+Enter a valid username.
+
+Enter a valid password.
+
+Click on the "Login" button. | The user should be successfully logged into the system.
+
+The application should redirect the user to the home page. | The user is successfully logged in.
+
+
+The application redirects the user to the home page. | Pass | No error messages are displayed.
+
+The user profile information is correctly displayed on the home page.
+
+Check if the login time is recorded for the user.
+ | Password Recovery |  Forgot Password | Open the application's login page.
+
+Click on the "Forgot Password" link.
+
+Enter a valid email address.
+
+Click on the "Submit" button. | The system should send a password reset 
+ email to the provided email address.
+
+
+The user should receive an email with instructions on resetting the password.
+ | The system successfully sends a password reset email.
+
+
+The user receives the email with reset instructions.
+ | Pass | Verify the content of the password reset email.
+
+
+
+Check that the link in the email redirects the user to the password reset page.
+
+
+
+================
+FILE: Sprint Retrospective (1).xlsx
+================
+--- Sheet: Sheet1 ---
+ |  | Sprint Retrospective |  |  | 
+ | What went well | What went poorly |   What ideas do you have | How should we take action | 
+ | This section highlights the successes and positive outcomes from the sprint. It helps the team recognize achievements and identify practices that should be continued. | This section identifies the challenges, roadblocks, or failures encountered during the sprint. It helps pinpoint areas that need improvement or change. | This section is for brainstorming new approaches, tools, or strategies to enhance the team's efficiency, productivity, or project outcomes. | This section outlines specific steps or solutions to address the issues and implement the ideas discussed, ensuring continuous improvement in future sprints. | Guidelines
+ | Example : All tasks were completed on time.
+Team communication was seamless. | Requirements changed mid-sprint. | Plan for a buffer to handle scope changes. | Set stricter deadlines for finalizing requirements. | Example
+

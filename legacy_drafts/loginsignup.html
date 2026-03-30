@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CollabCodeHub</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        background: '#030303',
+                        brand: {
+                            DEFAULT: '#1DCD9F',
+                            glow: 'rgba(29, 205, 159, 0.5)'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030303;
+            overflow: hidden; /* Prevent scroll */
+        }
+
+        /* Glass Card Styling */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        /* Input Spotlight Effect */
+        .input-group {
+            position: relative;
+            background: rgba(255,255,255,0.03);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            z-index: -1;
+            border-radius: inherit;
+            background: radial-gradient(
+                200px circle at var(--x, 0) var(--y, 0),
+                rgba(29, 205, 159, 0.4),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .input-group:hover::before,
+        .input-group:focus-within::before {
+            opacity: 1;
+        }
+
+        .input-field {
+            background: #0A0A0A; /* Match card slightly */
+            border-radius: 0.7rem; /* Slightly less than parent */
+        }
+
+        /* Form Transition Logic */
+        .form-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            backface-visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        .form-container.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0) scale(1);
+            position: relative; /* Return to flow */
+        }
+
+        /* Password Strength Bar */
+        .strength-bar {
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-white h-screen w-screen flex items-center justify-center selection:bg-brand selection:text-black">
+
+    <canvas id="bg-canvas" class="fixed inset-0 w-full h-full -z-10"></canvas>
+    
+    <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-brand/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" style="animation-delay: 2s;"></div>
+
+    <main class="relative w-full max-w-md p-6 z-10 perspective-1000">
+        
+        <div class="glass-panel rounded-2xl p-8 relative overflow-hidden" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+            
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand/10 border border-brand/20 mb-4 shadow-[0_0_15px_rgba(29,205,159,0.3)]">
+                    <i data-lucide="code-2" class="w-6 h-6 text-brand"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight">Welcome Back</h1>
+                <p class="text-gray-400 text-sm mt-1" id="header-subtitle">Enter your credentials to access the workspace.</p>
+            </div>
+
+            <div id="login-form" class="form-container active">
+                <form onsubmit="event.preventDefault();" class="space-y-4">
+                    <div class="space-y-4">
+                        <div class="input-group">
+                            <div class="input-field relative flex items-center h-12 px-4 border border-white/10 focus-within:border-brand/50 transition-colors">
+                                <i data-lucide="mail" class="w-5 h-5 text-gray-500 mr-3"></i>
+                                <input type="email" placeholder="Email address" class="w-full bg-transparent border-none outline-none text-sm placeholder:text-gray-600 text-white h-full" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-field relative flex items-center h-12 px-4 border border-white/10 focus-within:border-brand/50 transition-colors">
+                                <i data-lucide="lock" class="w-5 h-5 text-gray-500 mr-3"></i>
+                                <input type="password" placeholder="Password" class="w-full bg-transparent border-none outline-none text-sm placeholder:text-gray-600 text-white h-full" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-gray-400 mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                            <input type="checkbox" class="rounded bg-white/10 border-white/20 text-brand focus:ring-0">
+                            Remember me
+                        </label>
+                        <a href="#" class="hover:text-brand transition-colors">Forgot password?</a>
+                    </div>
+
+                    <button class="w-full h-12 rounded-lg bg-brand text-black font-bold hover:bg-[#15e0ab] transition-all shadow-[0_0_20px_rgba(29,205,159,0.2)] hover:shadow-[0_0_30px_rgba(29,205,159,0.4)] hover:-translate-y-0.5 mt-6">
+                        Sign In
+                    </button>
+
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+                        <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#0A0A0A] px-2 text-gray-500">Or continue with</span></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="flex items-center justify-center h-10 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors gap-2 text-sm">
+                            <i data-lucide="github" class="w-4 h-4"></i> Github
+                        </button>
+                        <button class="flex items-center justify-center h-10 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors gap-2 text-sm">
+                            <i data-lucide="chrome" class="w-4 h-4 text-orange-500"></i> Google
+                        </button>
+                    </div>
+
+                    <p class="text-center text-xs text-gray-500 mt-6">
+                        Don't have an account? 
+                        <button onclick="toggleForm('signup')" class="text-brand hover:underline font-medium ml-1">Sign up</button>
+                    </p>
+                </form>
+            </div>
+
+            <div id="signup-form" class="form-container">
+                <form onsubmit="event.preventDefault();" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <div class="input-field relative flex items-center h-12 px-4 border border-white/10 focus-within:border-brand/50 transition-colors">
+                                <input type="text" placeholder="First Name" class="w-full bg-transparent border-none outline-none text-sm placeholder:text-gray-600 text-white h-full" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-field relative flex items-center h-12 px-4 border border-white/10 focus-within:border-brand/50 transition-colors">
+                                <input type="text" placeholder="Last Name" class="w-full bg-transparent border-none outline-none text-sm placeholder:text-gray-600 text-white h-full" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-field relative flex items-center h-12 px-4 border border-white/10 focus-within:border-brand/50 transition-colors">
+                            <i data-lucide="mail" class="w-5 h-5 text-gray-500 mr-3"></i>
+                            <input type="email" placeholder="Email address" class="w-full bg-transparent border-none outline-none text-sm placeholder:text-gray-600 text-white h-full" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-field relative flex items-center h-12 px-4 border border-white/10 focus-within:border-brand/50 transition-colors">
+                            <i data-lucide="lock" class="w-5 h-5 text-gray-500 mr-3"></i>
+                            <input id="signup-pass" type="password" placeholder="Create Password" class="w-full bg-transparent border-none outline-none text-sm placeholder:text-gray-600 text-white h-full" required oninput="checkStrength(this.value)">
+                        </div>
+                    </div>
+                    
+                    <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden flex">
+                        <div id="strength-bar" class="h-full w-0 bg-red-500 strength-bar"></div>
+                    </div>
+                    <p id="strength-text" class="text-[10px] text-gray-500 text-right h-4">Password strength</p>
+
+                    <button class="w-full h-12 rounded-lg bg-brand text-black font-bold hover:bg-[#15e0ab] transition-all shadow-[0_0_20px_rgba(29,205,159,0.2)] hover:shadow-[0_0_30px_rgba(29,205,159,0.4)] hover:-translate-y-0.5 mt-4">
+                        Create Account
+                    </button>
+
+                    <p class="text-center text-xs text-gray-500 mt-6">
+                        Already have an account? 
+                        <button onclick="toggleForm('login')" class="text-brand hover:underline font-medium ml-1">Sign in</button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+        
+        <div class="text-center mt-6 text-xs text-gray-600">
+            <a href="#" class="hover:text-gray-400 transition-colors mx-2">Privacy</a> &bull; 
+            <a href="#" class="hover:text-gray-400 transition-colors mx-2">Terms</a> &bull; 
+            <a href="#" class="hover:text-gray-400 transition-colors mx-2">Help</a>
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialize Icons
+        lucide.createIcons();
+
+        // 2. Form Toggle Logic
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const headerTitle = document.querySelector('h1');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        function toggleForm(type) {
+            if (type === 'signup') {
+                loginForm.classList.remove('active');
+                setTimeout(() => {
+                    loginForm.style.display = 'none'; // Hide from flow
+                    signupForm.style.display = 'block'; // Add to flow
+                    signupForm.classList.add('active');
+                }, 100); // Small delay for fade out
+                
+                headerTitle.innerText = "Join the Hub";
+                headerSubtitle.innerText = "Start collaborating in seconds.";
+            } else {
+                signupForm.classList.remove('active');
+                setTimeout(() => {
+                    signupForm.style.display = 'none';
+                    loginForm.style.display = 'block';
+                    loginForm.classList.add('active');
+                }, 100);
+
+                headerTitle.innerText = "Welcome Back";
+                headerSubtitle.innerText = "Enter your credentials to access the workspace.";
+            }
+        }
+
+        // Initialize state
+        signupForm.style.display = 'none';
+
+        // 3. Spotlight Input Effect
+        document.querySelectorAll('.input-group').forEach(group => {
+            group.addEventListener('mousemove', (e) => {
+                const rect = group.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                group.style.setProperty('--x', `${x}px`);
+                group.style.setProperty('--y', `${y}px`);
+            });
+        });
+
+        // 4. Password Strength Logic
+        function checkStrength(password) {
+            const bar = document.getElementById('strength-bar');
+            const text = document.getElementById('strength-text');
+            let strength = 0;
+
+            if (password.length > 5) strength++;
+            if (password.length > 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            const width = (strength / 5) * 100;
+            bar.style.width = `${width}%`;
+
+            if (strength <= 2) {
+                bar.className = 'strength-bar h-full bg-red-500';
+                text.innerText = 'Weak';
+                text.className = 'text-[10px] text-red-500 text-right h-4';
+            } else if (strength <= 4) {
+                bar.className = 'strength-bar h-full bg-yellow-500';
+                text.innerText = 'Medium';
+                text.className = 'text-[10px] text-yellow-500 text-right h-4';
+            } else {
+                bar.className = 'strength-bar h-full bg-brand';
+                text.innerText = 'Strong';
+                text.className = 'text-[10px] text-brand text-right h-4';
+            }
+        }
+
+        // 5. Constellation Background Animation
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        // Configuration
+        const particleCount = 60;
+        const connectionDistance = 150;
+        const mouseDistance = 200;
+
+        // Mouse tracking
+        let mouse = { x: null, y: null };
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce off edges
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Mouse interaction
+                if (mouse.x != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouseDistance) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (mouseDistance - distance) / mouseDistance;
+                        const directionX = forceDirectionX * force * 0.6; // Push speed
+                        const directionY = forceDirectionY * force * 0.6;
+                        this.vx += directionX * 0.05; // Gentle attraction
+                        this.vy += directionY * 0.05;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                // Draw connections
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < connectionDistance) {
+                        ctx.beginPath();
+                        // Color based on distance
+                        let opacity = 1 - (distance / connectionDistance);
+                        ctx.strokeStyle = `rgba(29, 205, 159, ${opacity * 0.2})`; // Brand color low opacity
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+
+        // Vanilla Tilt Init for the Card
+        VanillaTilt.init(document.querySelector(".glass-panel"));
+
+    </script>
+</body>
+</html>

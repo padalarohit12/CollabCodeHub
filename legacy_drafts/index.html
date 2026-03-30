@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>CollabCodeHub | Real-time Coding Platform for Teams</title>
+    <meta name="description" content="Instant multi-cursor sync, built-in chat, and Kanban boards. The ultimate collaborative workspace for hackathons and student developers.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    },
+                    colors: {
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        background: '#030303',
+                        foreground: '#FFFFFF',
+                        brand: {
+                            DEFAULT: '#1DCD9F',
+                            dark: '#108e6d',
+                            glow: 'rgba(29, 205, 159, 0.5)',
+                            dim: 'rgba(29, 205, 159, 0.1)'
+                        },
+                        surface: '#0A0A0A'
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'float': 'float 6s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #030303; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1DCD9F; }
+
+        body {
+            background-color: #030303;
+            overflow-x: hidden;
+        }
+
+        /* Smooth Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+            filter: blur(10px);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+
+        /* Delays */
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+        .delay-400 { transition-delay: 400ms; }
+
+        /* Accordion */
+        .accordion-content {
+            transition: grid-template-rows 0.4s ease-out;
+            display: grid;
+            grid-template-rows: 0fr;
+        }
+        .accordion-content > div { overflow: hidden; }
+        .accordion-content.open { grid-template-rows: 1fr; }
+
+        /* Glass Card Utility */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(29, 205, 159, 0.3);
+            box-shadow: 0 0 30px rgba(29, 205, 159, 0.1);
+        }
+
+        /* Gradient Text Animation */
+        .animate-gradient {
+            background-size: 200% auto;
+            animation: gradient 4s linear infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="antialiased text-foreground selection:bg-brand selection:text-black">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+
+    <header>
+        <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-500" id="navbar">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex items-center gap-3 cursor-pointer group" onclick="window.scrollTo(0,0)">
+                        <div class="relative w-10 h-10 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-brand rounded-xl blur opacity-40 group-hover:opacity-80 transition-opacity duration-300"></div>
+                            <div class="relative w-full h-full rounded-xl bg-brand/10 border border-brand/50 flex items-center justify-center backdrop-blur-sm">
+                                <i data-lucide="code-2" class="w-5 h-5 text-brand group-hover:text-white transition-colors"></i>
+                            </div>
+                        </div>
+                        <span class="text-xl font-display font-bold tracking-tight">CollabCodeHub</span>
+                    </div>
+
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="#features" class="text-sm font-medium text-gray-400 hover:text-brand transition-colors">Features</a>
+                        <a href="#pricing" class="text-sm font-medium text-gray-400 hover:text-brand transition-colors">Pricing</a>
+                        <a href="#demo" class="text-sm font-medium text-gray-400 hover:text-brand transition-colors">Demo</a>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button onclick="openWaitlistModal()" class="hidden sm:flex h-10 px-6 items-center justify-center rounded-full bg-white text-black font-semibold text-sm hover:bg-brand hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                            Get Started
+                        </button>
+                        <button id="mobile-menu-btn" class="md:hidden text-foreground p-2 hover:text-brand transition-colors">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="mobile-menu" class="hidden md:hidden overflow-hidden transition-all duration-300 border-t border-white/5 bg-black/95 backdrop-blur-xl absolute left-0 right-0 px-6 py-6 shadow-2xl">
+                    <div class="flex flex-col space-y-4">
+                        <a href="#features" class="text-lg font-medium text-gray-300 hover:text-brand">Features</a>
+                        <a href="#pricing" class="text-lg font-medium text-gray-300 hover:text-brand">Pricing</a>
+                        <a href="#demo" class="text-lg font-medium text-gray-300 hover:text-brand">Demo</a>
+                        <button onclick="openWaitlistModal()" class="w-full h-12 rounded-lg bg-brand text-black font-bold mt-4">
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="relative min-h-screen flex items-center justify-center pt-20 pb-20 overflow-hidden">
+            <canvas id="hero-canvas" class="absolute inset-0 w-full h-full object-cover -z-20"></canvas>
+            
+            <div class="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background z-[-10]"></div>
+
+            <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center">
+                
+                <div class="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-xl hover:border-brand/40 transition-colors cursor-default">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                    </span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-300">v2.0 Beta Live</span>
+                </div>
+
+                <h1 class="reveal delay-100 text-5xl sm:text-7xl md:text-8xl font-display font-bold mb-8 tracking-tight leading-[1] text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/50">
+                    Sync Code.<br />
+                    <span class="bg-gradient-to-r from-brand via-white to-brand bg-clip-text text-transparent bg-[200%_auto] animate-gradient">
+                        Ship Faster.
+                    </span>
+                </h1>
+
+                <p class="reveal delay-200 text-lg sm:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
+                    The fluid workspace for engineering teams. Real-time collaboration, instant environments, and zero friction.
+                </p>
+
+                <div class="reveal delay-300 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button onclick="openWaitlistModal()" class="group h-14 px-8 rounded-full bg-brand text-black font-bold text-lg hover:bg-[#15e0ab] transition-all flex items-center gap-2 hover:-translate-y-1 shadow-[0_0_40px_rgba(29,205,159,0.4)]">
+                        Start Coding Free
+                        <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    <button onclick="openVideoModal()" class="h-14 px-8 rounded-full border border-white/10 bg-white/5 text-white font-medium text-lg hover:bg-white/10 backdrop-blur-md transition-all flex items-center gap-2 hover:border-white/20">
+                        <i data-lucide="play-circle" class="w-5 h-5"></i>
+                        Watch Demo
+                    </button>
+                </div>
+
+                <div class="reveal delay-400 mt-24 relative max-w-5xl mx-auto animate-float">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-brand to-blue-600 rounded-2xl blur-xl opacity-20"></div>
+                    <div class="relative rounded-xl border border-white/10 overflow-hidden bg-[#0A0A0A]/80 backdrop-blur-xl shadow-2xl ring-1 ring-white/10 cursor-pointer" onclick="openVideoModal()">
+                        <img src="https://images.unsplash.com/photo-1607799275518-d58665d096b1?q=80&w=1600&auto=format&fit=crop" alt="Dashboard" class="w-full h-auto opacity-70 hover:opacity-100 transition-opacity duration-700">
+                        <div class="absolute inset-0 flex items-center justify-center group">
+                            <div class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <i data-lucide="play" class="w-8 h-8 text-brand fill-brand ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="py-32 px-6 lg:px-8 relative overflow-hidden">
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 w-[600px] h-[600px] bg-brand/10 rounded-full blur-[120px] -z-10 animate-blob"></div>
+            <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -z-10 animate-blob animation-delay-2000"></div>
+
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20">
+                    <h2 class="reveal text-4xl md:text-5xl font-display font-bold mb-6">Engineered for flow</h2>
+                    <p class="reveal delay-100 text-xl text-gray-400 max-w-2xl mx-auto">Everything you need to build great software, minus the distractions.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="reveal delay-100 glass-card rounded-2xl p-8 group" data-tilt>
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="zap" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Lightning Sync</h3>
+                        <p class="text-gray-400 leading-relaxed">Sub-millisecond latency. Whether you're in Tokyo or New York, code collaboratively as if you're on localhost.</p>
+                    </div>
+
+                    <div class="reveal delay-200 glass-card rounded-2xl p-8 group" data-tilt>
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="terminal" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Cloud Terminal</h3>
+                        <p class="text-gray-400 leading-relaxed">Full root access. Install packages, run servers, and deploy instantly without leaving your browser.</p>
+                    </div>
+
+                    <div class="reveal delay-300 glass-card rounded-2xl p-8 group" data-tilt>
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="message-square-dashed" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Context Chat</h3>
+                        <p class="text-gray-400 leading-relaxed">Discussions linked to lines of code. Resolve conflicts and make decisions where the work happens.</p>
+                    </div>
+
+                    <div class="reveal delay-100 glass-card rounded-2xl p-8 lg:col-span-2 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-[80px] group-hover:bg-brand/10 transition-colors"></div>
+                        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                <i data-lucide="git-merge" class="w-7 h-7 text-brand"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-3 font-display">Visual Version Control</h3>
+                                <p class="text-gray-400 leading-relaxed max-w-lg">Forget command line confusion. Visualize branches, merge conflicts, and PRs in an intuitive, node-based graph interface built for humans.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reveal delay-200 glass-card rounded-2xl p-8 group" data-tilt>
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="cpu" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">AI Copilot</h3>
+                        <p class="text-gray-400 leading-relaxed">Context-aware suggestions that understand your entire project structure, not just the current file.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 px-6 lg:px-8 relative border-y border-white/5 bg-white/[0.01]">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                    <div class="hidden md:block absolute top-[2.5rem] left-[16%] right-[16%] h-[2px] bg-gradient-to-r from-transparent via-brand/20 to-transparent"></div>
+
+                    <div class="reveal delay-100 text-center relative z-10">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[#0F0F0F] border border-white/10 mb-6 shadow-[0_0_30px_rgba(29,205,159,0.1)] relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-brand/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <span class="text-3xl font-display font-bold text-white relative z-10">1</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Initialize</h3>
+                        <p class="text-gray-500 text-sm">Spin up a workspace in seconds</p>
+                    </div>
+
+                    <div class="reveal delay-200 text-center relative z-10">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[#0F0F0F] border border-white/10 mb-6 shadow-[0_0_30px_rgba(29,205,159,0.1)] relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-brand/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <span class="text-3xl font-display font-bold text-brand relative z-10">2</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Invite</h3>
+                        <p class="text-gray-500 text-sm">Share a magic URL with your team</p>
+                    </div>
+
+                    <div class="reveal delay-300 text-center relative z-10">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[#0F0F0F] border border-white/10 mb-6 shadow-[0_0_30px_rgba(29,205,159,0.1)] relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-brand/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <span class="text-3xl font-display font-bold text-white relative z-10">3</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Build</h3>
+                        <p class="text-gray-500 text-sm">Ship production code together</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pricing" class="py-32 px-6 lg:px-8 relative overflow-hidden">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-brand/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="text-center mb-20">
+                    <h2 class="reveal text-4xl md:text-5xl font-display font-bold mb-6">Simple pricing</h2>
+                    <p class="reveal delay-100 text-xl text-gray-400">Power to the students. Enterprise grade for pros.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                    
+                    <div class="reveal delay-100 glass-card rounded-3xl p-8 hover:bg-white/[0.03] transition-colors h-fit">
+                        <h3 class="text-xl font-bold mb-2 text-gray-300">Starter</h3>
+                        <div class="mb-6"><span class="text-4xl font-bold font-display text-white">$0</span><span class="text-gray-500">/mo</span></div>
+                        <p class="text-sm text-gray-400 mb-8 border-b border-white/5 pb-8">Perfect for hackathons and hobby projects.</p>
+                        <ul class="space-y-4 mb-8 text-sm text-gray-300">
+                            <li class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-brand"></i> 3 Public Workspaces</li>
+                            <li class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-brand"></i> 2 Collaborators</li>
+                            <li class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Community Support</li>
+                        </ul>
+                        <button onclick="openWaitlistModal()" class="w-full h-12 rounded-xl border border-white/10 hover:bg-white/5 font-medium transition-colors text-white">Start Free</button>
+                    </div>
+
+                    <div class="reveal delay-200 glass-card rounded-3xl p-8 relative border-brand/40 shadow-[0_0_50px_rgba(29,205,159,0.15)] transform md:-translate-y-4">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand to-brand-dark text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">Most Popular</div>
+                        
+                        <h3 class="text-xl font-bold mb-2 text-brand">Pro Student</h3>
+                        <div class="mb-6"><span class="text-5xl font-bold font-display text-white">$5</span><span class="text-gray-400">/mo</span></div>
+                        <p class="text-sm text-gray-400 mb-8 border-b border-white/5 pb-8">For serious builders and portfolios.</p>
+                        
+                        <ul class="space-y-4 mb-8 text-sm text-white">
+                            <li class="flex items-center gap-3"><div class="p-1 bg-brand/20 rounded-full"><i data-lucide="check" class="w-3 h-3 text-brand"></i></div> Unlimited Workspaces</li>
+                            <li class="flex items-center gap-3"><div class="p-1 bg-brand/20 rounded-full"><i data-lucide="check" class="w-3 h-3 text-brand"></i></div> Private Projects</li>
+                            <li class="flex items-center gap-3"><div class="p-1 bg-brand/20 rounded-full"><i data-lucide="check" class="w-3 h-3 text-brand"></i></div> AI Autocomplete</li>
+                            <li class="flex items-center gap-3"><div class="p-1 bg-brand/20 rounded-full"><i data-lucide="check" class="w-3 h-3 text-brand"></i></div> Priority Support</li>
+                        </ul>
+                        <button onclick="openWaitlistModal()" class="w-full h-12 rounded-xl bg-brand text-black font-bold hover:bg-[#15e0ab] transition-colors shadow-lg shadow-brand/20">Get Started</button>
+                    </div>
+
+                    <div class="reveal delay-300 glass-card rounded-3xl p-8 hover:bg-white/[0.03] transition-colors h-fit">
+                        <h3 class="text-xl font-bold mb-2 text-gray-300">Team</h3>
+                        <div class="mb-6"><span class="text-4xl font-bold font-display text-white">$20</span><span class="text-gray-500">/mo</span></div>
+                        <p class="text-sm text-gray-400 mb-8 border-b border-white/5 pb-8">Scale your startup or agency.</p>
+                        <ul class="space-y-4 mb-8 text-sm text-gray-300">
+                            <li class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Everything in Pro</li>
+                            <li class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Admin Dashboard</li>
+                            <li class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Audit Logs</li>
+                        </ul>
+                        <button onclick="openWaitlistModal()" class="w-full h-12 rounded-xl border border-white/10 hover:bg-white/5 font-medium transition-colors text-white">Contact Sales</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="reveal text-3xl font-display font-bold mb-12 text-center">Questions?</h2>
+                <div class="reveal delay-100 space-y-4">
+                    <div class="border border-white/5 rounded-xl bg-white/[0.02] overflow-hidden">
+                        <button class="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none hover:bg-white/5 transition-colors group faq-btn">
+                            <span class="font-medium text-gray-200">Is it really free for hackathons?</span>
+                            <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 transition-transform duration-300"></i>
+                        </button>
+                        <div class="accordion-content bg-black/20">
+                            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                                Absolutely. We sponsor hackathons directly. If you are an organizer or participant, use the Starter tier. It never expires and has everything you need for a weekend sprint.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-white/5 rounded-xl bg-white/[0.02] overflow-hidden">
+                        <button class="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none hover:bg-white/5 transition-colors group faq-btn">
+                            <span class="font-medium text-gray-200">Does it work offline?</span>
+                            <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 transition-transform duration-300"></i>
+                        </button>
+                        <div class="accordion-content bg-black/20">
+                            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                                CollabCodeHub is primarily cloud-based to ensure real-time sync. However, we have a PWA mode that allows local editing, which syncs back up once you reconnect.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-white/10 bg-[#020202] pt-20 pb-10 px-6 lg:px-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand/50 to-transparent"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+                            <i data-lucide="code-2" class="w-5 h-5 text-black"></i>
+                        </div>
+                        <span class="text-xl font-display font-bold">CollabCodeHub</span>
+                    </div>
+                    <p class="text-sm text-gray-500 max-w-sm mb-6">
+                        The operating system for modern software teams. 
+                        Design, Code, and Ship in one fluid environment.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-6 text-white text-sm uppercase tracking-wider">Product</h3>
+                    <ul class="space-y-4 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-brand transition-colors">Changelog</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Integrations</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-6 text-white text-sm uppercase tracking-wider">Legal</h3>
+                    <ul class="space-y-4 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-brand transition-colors">Privacy</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Terms</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600">
+                <p>&copy; 2024 CollabCodeHub Inc. All rights reserved.</p>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span>All Systems Operational</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="video-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 p-4 backdrop-blur-md transition-all duration-300 opacity-0" onclick="closeVideoModal(event)">
+        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl shadow-2xl border border-white/10 overflow-hidden transform scale-95 transition-all duration-300" id="video-content">
+            <button onclick="closeVideoModal(event)" class="absolute top-4 right-4 z-10 text-white/50 hover:text-white transition-colors bg-black/50 rounded-full p-2 hover:bg-white/10">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <iframe id="video-iframe" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="waitlist-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 p-4 backdrop-blur-md transition-all duration-300 opacity-0" onclick="closeWaitlistModal(event)">
+        <div class="relative w-full max-w-md bg-[#111] border border-white/10 rounded-2xl p-8 shadow-2xl transform scale-95 transition-all duration-300" id="waitlist-content">
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-brand/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <button onclick="closeWaitlistModal(event)" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center mb-8 relative z-10">
+                <div class="w-14 h-14 bg-brand/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand/20">
+                    <i data-lucide="rocket" class="w-7 h-7 text-brand"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white font-display">Join the Beta</h3>
+                <p class="text-gray-400 mt-2 text-sm">Get early access to the future of coding.</p>
+            </div>
+            <form id="waitlist-form" onsubmit="handleWaitlist(event)" class="relative z-10">
+                <div class="space-y-4">
+                    <div>
+                        <label class="sr-only">Email</label>
+                        <input type="email" placeholder="name@company.com" required class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 focus:border-brand focus:ring-1 focus:ring-brand outline-none text-white placeholder:text-gray-600 transition-all">
+                    </div>
+                    <button type="submit" class="w-full h-12 rounded-xl bg-brand text-black font-bold hover:bg-[#15e0ab] transition-all shadow-lg shadow-brand/20 hover:shadow-brand/30">
+                        Join Waitlist
+                    </button>
+                </div>
+            </form>
+            <div id="waitlist-success" class="hidden text-center py-8">
+                <div class="text-brand font-bold text-xl mb-2">You're on the list! 🚀</div>
+                <p class="text-sm text-gray-400">We'll be in touch very soon.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Initialize Icons
+        lucide.createIcons();
+
+        // 2. Navbar Scroll Effect (Smoother)
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('bg-black/70', 'backdrop-blur-xl', 'border-b', 'border-white/5');
+            } else {
+                navbar.classList.remove('bg-black/70', 'backdrop-blur-xl', 'border-b', 'border-white/5');
+            }
+        });
+
+        // 3. 3D Tilt Effect
+        VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+            max: 3, 
+            speed: 1000, 
+            glare: true, 
+            "max-glare": 0.05, 
+            scale: 1.02,
+            gyroscope: false
+        });
+
+        // 4. Scroll Reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 5. Modals
+        const videoModal = document.getElementById('video-modal');
+        const videoContent = document.getElementById('video-content');
+        const videoFrame = document.getElementById('video-iframe');
+        const demoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1"; 
+
+        function openVideoModal() {
+            videoModal.classList.remove('hidden');
+            setTimeout(() => {
+                videoModal.classList.remove('opacity-0');
+                videoContent.classList.remove('scale-95');
+                videoContent.classList.add('scale-100');
+                videoFrame.src = demoUrl;
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoModal(e) {
+            if (e.target !== videoModal && !e.target.closest('button')) return;
+            videoModal.classList.add('opacity-0');
+            videoContent.classList.remove('scale-100');
+            videoContent.classList.add('scale-95');
+            setTimeout(() => {
+                videoModal.classList.add('hidden');
+                videoFrame.src = "";
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        const waitlistModal = document.getElementById('waitlist-modal');
+        const waitlistContent = document.getElementById('waitlist-content');
+        const waitlistForm = document.getElementById('waitlist-form');
+        const waitlistSuccess = document.getElementById('waitlist-success');
+
+        function openWaitlistModal() {
+            waitlistModal.classList.remove('hidden');
+            setTimeout(() => {
+                waitlistModal.classList.remove('opacity-0');
+                waitlistContent.classList.remove('scale-95');
+                waitlistContent.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeWaitlistModal(e) {
+            if (e && e.target !== waitlistModal && !e.target.closest('button')) return;
+            waitlistModal.classList.add('opacity-0');
+            waitlistContent.classList.remove('scale-100');
+            waitlistContent.classList.add('scale-95');
+            setTimeout(() => {
+                waitlistModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                waitlistForm.classList.remove('hidden');
+                waitlistSuccess.classList.add('hidden');
+                waitlistForm.reset();
+            }, 300);
+        }
+
+        function handleWaitlist(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "Joining...";
+            setTimeout(() => {
+                waitlistForm.classList.add('hidden');
+                waitlistSuccess.classList.remove('hidden');
+                btn.innerText = originalText;
+            }, 800);
+        }
+
+        // Mobile Menu
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileBtn.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+
+        // FAQ Logic
+        document.querySelectorAll('.faq-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                const isOpen = content.classList.contains('open');
+                
+                // Close all
+                document.querySelectorAll('.accordion-content').forEach(el => {
+                    el.classList.remove('open');
+                    el.previousElementSibling.querySelector('i').style.transform = 'rotate(0deg)';
+                    el.previousElementSibling.querySelector('span').classList.remove('text-brand');
+                });
+
+                if (!isOpen) {
+                    content.classList.add('open');
+                    icon.style.transform = 'rotate(180deg)';
+                    this.querySelector('span').classList.add('text-brand');
+                }
+            });
+        });
+
+        // ==========================================
+        // LIQUID CRYSTAL SHADER (WebGL) - Preserved
+        // ==========================================
+        (function initLiquidCrystal() {
+            const canvas = document.getElementById("hero-canvas");
+            if (!canvas) return;
+
+            const gl = canvas.getContext("webgl2");
+            if (!gl) return;
+
+            const vsSrc = `#version 300 es
+                in vec2 position;
+                void main() { gl_Position = vec4(position, 0.0, 1.0); }`;
+
+            const fsSrc = `#version 300 es
+                precision highp float;
+                uniform float u_time;
+                uniform vec2 u_resolution;
+                uniform float u_speed;
+                uniform vec3 u_radii;
+                uniform vec2 u_smoothK;
+                out vec4 fragColor;
+
+                float sdCircle(vec2 p, float r) { return length(p) - r; }
+                float opSmoothUnion(float d1, float d2, float k) {
+                    float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+                    return mix(d2, d1, h) - k * h * (1.0 - h);
+                }
+                float mapScene(vec2 uv) {
+                    float t = u_time * u_speed;
+                    vec2 p1 = vec2(cos(t * 0.5), sin(t * 0.5)) * 0.3;
+                    vec2 p2 = vec2(cos(t * 0.7 + 2.1), sin(t * 0.6 + 2.1)) * 0.4;
+                    vec2 p3 = vec2(cos(t * 0.4 + 4.2), sin(t * 0.8 + 4.2)) * 0.35;
+                    float b1 = sdCircle(uv - p1, u_radii.x);
+                    float b2 = sdCircle(uv - p2, u_radii.y);
+                    float b3 = sdCircle(uv - p3, u_radii.z);
+                    float u12 = opSmoothUnion(b1, b2, u_smoothK.x);
+                    return opSmoothUnion(u12, b3, u_smoothK.y);
+                }
+                void main() {
+                    vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
+                    float d = mapScene(uv);
+                    // Use brand colors (teal/green)
+                    vec3 baseColor = vec3(0.11, 0.8, 0.62); 
+                    vec3 glow = baseColor * (0.01 / abs(d));
+                    
+                    // Add subtle iridescence
+                    vec3 pha = 0.5 + 0.5 * cos(u_time * 0.2 + uv.xyx + vec3(0,2,4)); 
+                    vec3 col = clamp(glow * pha, 0.0, 1.0);
+                    
+                    fragColor = vec4(col, 1.0);
+                }`;
+
+            function compile(type, src) {
+                const s = gl.createShader(type);
+                gl.shaderSource(s, src);
+                gl.compileShader(s);
+                if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                    gl.deleteShader(s); return null;
+                }
+                return s;
+            }
+
+            const vs = compile(gl.VERTEX_SHADER, vsSrc);
+            const fs = compile(gl.FRAGMENT_SHADER, fsSrc);
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs);
+            gl.attachShader(prog, fs);
+            gl.linkProgram(prog);
+
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1, -1,-1, 1,1, 1,-1]), gl.STATIC_DRAW);
+            const posLoc = gl.getAttribLocation(prog, "position");
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            const uRes = gl.getUniformLocation(prog, "u_resolution");
+            const uTime = gl.getUniformLocation(prog, "u_time");
+            const uSpeed = gl.getUniformLocation(prog, "u_speed");
+            const uRadii = gl.getUniformLocation(prog, "u_radii");
+            const uK = gl.getUniformLocation(prog, "u_smoothK");
+
+            const config = { speed: 0.5, radii: [0.25, 0.18, 0.3], smoothK: [0.2, 0.3] };
+
+            function resize() {
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = canvas.clientWidth * dpr;
+                canvas.height = canvas.clientHeight * dpr;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+            }
+            window.addEventListener("resize", resize);
+            resize();
+
+            function render(time) {
+                gl.clearColor(0,0,0,0); 
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.useProgram(prog);
+                gl.uniform2f(uRes, canvas.width, canvas.height);
+                gl.uniform1f(uTime, time * 0.001);
+                gl.uniform1f(uSpeed, config.speed);
+                gl.uniform3fv(uRadii, config.radii);
+                gl.uniform2fv(uK, config.smoothK);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        })();
+    </script>
+</body>
+</html>

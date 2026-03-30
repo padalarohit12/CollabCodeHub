@@ -1,0 +1,99 @@
+import { createClient } from "@liveblocks/client";
+import { createRoomContext } from "@liveblocks/react";
+
+const publicApiKey = import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY;
+
+if (!publicApiKey) {
+    throw new Error("Missing VITE_LIVEBLOCKS_PUBLIC_KEY");
+}
+
+export const client = createClient({
+    publicApiKey,
+});
+
+export enum LayerType {
+    Rectangle,
+    Ellipse,
+    Path,
+    Text,
+}
+
+export type RectangleLayer = {
+    type: LayerType.Rectangle;
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+    fill: string;
+};
+
+export type EllipseLayer = {
+    type: LayerType.Ellipse;
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+    fill: string;
+};
+
+export type PathLayer = {
+    type: LayerType.Path;
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+    fill: string;
+    points: number[][];
+};
+
+export type TextLayer = {
+    type: LayerType.Text;
+    x: number;
+    y: number;
+    height: number;
+    width: number;
+    fill: string;
+    text: string;
+};
+
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | TextLayer;
+
+type Presence = {
+    cursor: { x: number; y: number } | null;
+    selectedLayerId: string | null;
+    pencilColor: string | null;
+    isTyping: boolean;
+};
+
+type Storage = {
+    layers: any; // We'll cast to LiveMap<string, LiveObject<Layer>> in components
+    layerIds: any; // We'll cast to LiveList<string> in components
+};
+
+type UserMeta = {
+    id: string;
+    info: {
+        name: string;
+        avatar: string;
+        color: string;
+    };
+};
+
+type RoomEvent = {
+    type: "CHAT_MESSAGE";
+    text: string;
+};
+
+const context = createRoomContext<Presence, Storage, UserMeta, RoomEvent>(client);
+
+export const RoomProvider = context.RoomProvider;
+export const useOthers = context.useOthers;
+export const useSelf = context.useSelf;
+export const useMyPresence = context.useMyPresence;
+export const useUpdateMyPresence = context.useUpdateMyPresence;
+export const useRoom = context.useRoom;
+export const useStorage = context.useStorage;
+export const useMutation = context.useMutation;
+export const useCanUndo = context.useCanUndo;
+export const useCanRedo = context.useCanRedo;
+export const useHistory = context.useHistory;

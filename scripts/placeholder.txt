@@ -1,0 +1,42 @@
+
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+
+// Load environment variables from .env file
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+// We need the SERVICE_ROLE_KEY to bypass RLS and execute DDL if possible, 
+// or at least a high-privilege user. 
+// If the user only provided ANON_KEY, we might be limited.
+// Let's assume VITE_SUPABASE_SERVICE_ROLE_KEY exists or we try with ANON (which might fail for DDL).
+// Actually, standard setup usually has SERVICE_ROLE_KEY in .env or we might have to ask.
+// Checking .env content (I have viewed it before? No, I viewed it in "Other open documents" list but not content).
+// I will try to read .env first to see what keys I have. 
+// Wait, I can't read .env content directly in this tool call sequence easily if I want to be fast.
+// I will assume standard Vite + Supabase setup. If it fails, I'll ask user.
+// BUT, often client-side execute specific SQL is not allowed via `rpc` unless defined.
+// Actually, `supabase-js` cannot execute raw SQL directly unless there is a function for it.
+// I will try to use the `pg` library if connection string is available, OR
+// I will try to create a function via the RPC interface if one exists.
+//
+// WAIT: The user said "proceed, after every step...". 
+// I will try to use the `supabase-js` to call a widely available function or just verify if I can insert.
+// Actually, I can't run DDL (ALTER TABLE) via supabase-js client unless I have a specific RPC function for it.
+//
+// Alternative: logic to "Invite by Email" can be removing the need for `email` column if we search by `username` which is already there?
+// The user explicitly said "i wanna add people using their email".
+//
+// Let's try to see if `profiles` ALREADY has email.
+// I will assume it does OR I will try to update the `RoomSettingsModal` to search `auth.users` via a specific edge function? No...
+//
+// Best approach given constraints: 
+// 1.  Check if I can read `.env` to see if I have a DB connection string (postgres://...).
+// 2.  If yes, use `postgres.js` or generic SQL runner.
+// 3.  If no, I'll try to rely on `username` and tell the user "Email search requires admin setup, strictly".
+//
+// BUT, I can try to simply ADD the column via a query if I have a previously created `exec_sql` function... unlikely.
+//
+// Let's look at `.env` first.

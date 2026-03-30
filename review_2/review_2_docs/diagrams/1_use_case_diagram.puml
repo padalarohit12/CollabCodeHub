@@ -1,0 +1,62 @@
+@startuml CollabCodeHub_UseCaseDiagram
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam backgroundColor #FAFAFA
+skinparam shadowing false
+
+title CollabCodeHub - Use Case Diagram
+
+actor "Registered User" as User
+actor "Room Admin" as Admin
+actor "AI Agent\n(Qwen2.5-7B)" as AI <<System>>
+actor "Supabase Auth" as SupaAuth <<System>>
+actor "Liveblocks" as LB <<System>>
+
+rectangle "CollabCodeHub Platform" {
+
+    usecase "Register / Login" as UC1
+    usecase "View Dashboard" as UC2
+    usecase "Create Room" as UC3
+    usecase "Join Room via Slug" as UC4
+    usecase "Edit Code Collaboratively" as UC5
+    usecase "Real-Time Code Sync (CRDT)" as UC6
+    usecase "Chat with Team Members" as UC7
+    usecase "Manage Kanban Tasks" as UC8
+    usecase "Draw on Whiteboard" as UC9
+    usecase "Invoke AI Agent" as UC10
+    usecase "Generate / Modify Code via AI" as UC11
+    usecase "Share Room Link" as UC12
+    usecase "Run Code in Terminal" as UC13
+    usecase "View Live Preview" as UC14
+    usecase "Manage Room Settings" as UC15
+    usecase "View Activity Feed" as UC16
+    usecase "Manage User Settings" as UC17
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC7
+User --> UC8
+User --> UC9
+User --> UC10
+User --> UC13
+User --> UC14
+User --> UC16
+User --> UC17
+
+Admin --> UC12
+Admin --> UC15
+Admin --|> User
+
+UC1 ..> SupaAuth : <<uses>>
+UC5 ..> UC6 : <<includes>>
+UC6 ..> LB : <<uses>>
+UC10 ..> UC11 : <<includes>>
+UC11 ..> AI : <<uses>>
+
+@enduml
