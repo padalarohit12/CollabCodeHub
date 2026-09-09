@@ -1,7 +1,8 @@
 {
-  "name": "temp_app",
+  "name": "collabcodehub",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Next-Gen Real-Time Collaborative Coding, Whiteboarding, Task Management & AI-Powered Development Environment",
   "type": "module",
   "scripts": {
     "dev": "vite",
